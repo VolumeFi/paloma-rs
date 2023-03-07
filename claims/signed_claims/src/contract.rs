@@ -1,5 +1,8 @@
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
-use crate::state::{ADMIN, DELEGATE_ADDRESS, DENOM, REWARDS, SUBMITTED, TOTAL_CLAIMED};
+use crate::state::{
+    ADMIN, CLAIMED_REWARDS, DELEGATE_ADDRESS, DENOM, REWARDS, SUBMITTED, TOTAL_CLAIMED,
+    TOTAL_REGISTERED,
+};
 use cosmwasm_std::{
     coin, coins, to_binary, BankMsg, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult,
     Uint128,
@@ -23,6 +26,8 @@ pub fn instantiate(
 ) -> Result<Response> {
     ADMIN.save(deps.storage, &info.sender)?;
     DELEGATE_ADDRESS.save(deps.storage, &msg.delegate_address)?;
+    TOTAL_REGISTERED.save(deps.storage, &0)?;
+    TOTAL_CLAIMED.save(deps.storage, &0)?;
     ensure!(
         !info.funds.is_empty(),
         "contract must be instantiated with funds"
@@ -44,21 +49,30 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> R
                 "tx already submitted"
             );
             SUBMITTED.save(deps.storage, tx_meta.tx_hash, &())?;
-            let amount = REWARDS
-                .may_load(deps.storage, tx_meta.address.clone())?
-                .unwrap_or(0);
-            let amount = amount + tx_meta.amount.u128();
-            REWARDS.save(deps.storage, tx_meta.address, &amount)?;
-            Ok(Response::new().add_attribute("claimable", Uint128::from(amount)))
+            let reward = REWARDS.update(deps.storage, tx_meta.address, |reward| {
+                StdResult::Ok(reward.unwrap_or(0) + tx_meta.amount.u128())
+            })?;
+            let total_registered = TOTAL_REGISTERED.update(deps.storage, |total| {
+                StdResult::Ok(total + tx_meta.amount.u128())
+            })?;
+            let total_claimed = TOTAL_CLAIMED.load(deps.storage)?;
+            let bank = deps
+                .querier
+                .query_balance(&env.contract.address, DENOM.load(deps.storage)?)?
+                .amount
+                .u128();
+            ensure!(
+                total_registered - total_claimed > bank,
+                "Cannot register more than is banked."
+            );
+            Ok(Response::new().add_attribute("claimable", Uint128::from(reward)))
         }
         ExecuteMsg::Claim {} => {
             let amount = REWARDS.load(deps.storage, info.sender.clone())?;
             REWARDS.remove(deps.storage, info.sender.clone());
-            let total = TOTAL_CLAIMED
-                .may_load(deps.storage, info.sender.clone())?
-                .unwrap_or(0);
-            let total = total + amount;
-            TOTAL_CLAIMED.save(deps.storage, info.sender.clone(), &total)?;
+            CLAIMED_REWARDS.update(deps.storage, info.sender.clone(), |total| {
+                StdResult::Ok(total.unwrap_or(0) + amount)
+            })?;
 
             Ok(Response::new().add_message(BankMsg::Send {
                 to_address: info.sender.into(),
@@ -81,14 +95,21 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> R
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
-    match msg {
-        QueryMsg::Claim { address } => to_binary(&coin(
+    to_binary(&match msg {
+        QueryMsg::Claim { address } => coin(
             REWARDS.may_load(deps.storage, address)?.unwrap_or(0),
             DENOM.load(deps.storage)?,
-        )),
-        QueryMsg::TotalClaimed { address } => to_binary(&coin(
-            TOTAL_CLAIMED.load(deps.storage, address)?,
+        ),
+        QueryMsg::ClaimedRewards { address } => coin(
+            CLAIMED_REWARDS.load(deps.storage, address)?,
             DENOM.load(deps.storage)?,
-        )),
-    }
+        ),
+        QueryMsg::TotalClaimed {} => {
+            coin(TOTAL_CLAIMED.load(deps.storage)?, DENOM.load(deps.storage)?)
+        }
+        QueryMsg::TotalRegistered {} => coin(
+            TOTAL_REGISTERED.load(deps.storage)?,
+            DENOM.load(deps.storage)?,
+        ),
+    })
 }
