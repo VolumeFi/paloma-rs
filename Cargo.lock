@@ -619,20 +619,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "robin"
-version = "0.1.0"
-dependencies = [
- "cosmwasm-schema",
- "cosmwasm-std",
- "eyre",
- "hex",
- "schemars",
- "serde",
- "serde_json",
- "xcci",
-]
-
-[[package]]
 name = "ryu"
 version = "1.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -866,6 +852,21 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "trampoline"
+version = "0.1.0"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cw-storage-plus",
+ "eyre",
+ "hex",
+ "schemars",
+ "serde",
+ "serde_json",
+ "xcci",
 ]
 
 [[package]]
