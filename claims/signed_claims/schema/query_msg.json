@@ -17,7 +17,8 @@
             "address": {
               "$ref": "#/definitions/Addr"
             }
-          }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -37,7 +38,8 @@
             "address": {
               "$ref": "#/definitions/Addr"
             }
-          }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -49,7 +51,8 @@
       ],
       "properties": {
         "total_claimed": {
-          "type": "object"
+          "type": "object",
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -61,7 +64,8 @@
       ],
       "properties": {
         "total_registered": {
-          "type": "object"
+          "type": "object",
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

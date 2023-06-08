@@ -21,7 +21,8 @@
             "target_contract_info": {
               "$ref": "#/definitions/TargetContractInfo"
             }
-          }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -58,7 +59,8 @@
           "description": "The json encoded ABI of the contract on the target chain.",
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     }
   }
 }

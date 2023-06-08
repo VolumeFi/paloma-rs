@@ -35,12 +35,12 @@
 
 #![deny(missing_docs)]
 
+use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Binary, CustomMsg};
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
 
 /// Metadata necessary to call a specific contract.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[derive(Eq)]
+#[cw_serde]
 pub struct TargetContractInfo {
     /// The chain id of the target chain, e.g. "eth-main".
     pub chain_id: String,
@@ -54,7 +54,8 @@ pub struct TargetContractInfo {
 }
 
 /// A struct implementing `CustomMsg` to be passed as a response message.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[derive(Eq)]
+#[cw_serde]
 pub struct ExecutePalomaJob {
     /// Metadata of the foreign contract we wish to call.
     pub target_contract_info: TargetContractInfo,

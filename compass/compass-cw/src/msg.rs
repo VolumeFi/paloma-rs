@@ -1,30 +1,30 @@
+use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Addr, Binary, Uint256};
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[cw_serde]
 pub struct MigrateMsg {}
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, JsonSchema)]
+#[derive(Eq, PartialOrd, Ord)]
+#[cw_serde]
 pub struct ValsetId(pub Uint256);
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[cw_serde]
 pub struct Valset {
     pub valset_id: ValsetId,
     pub validators: Vec<Binary>,
     pub powers: Vec<u32>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[cw_serde]
 pub struct Signature(pub Vec<u8>);
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[cw_serde]
 pub struct Consensus {
     /// Signatures must be in the same order as the validator array in `valset`
     pub signatures: Vec<Option<Signature>>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[cw_serde]
 pub struct InstantiateMsg {
     pub smart_contract_id: Addr,
     pub valset: Valset,
@@ -32,14 +32,13 @@ pub struct InstantiateMsg {
 
 pub type MessageId = Uint256;
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[cw_serde]
 pub struct ExecuteMsg {
     pub consensus: Consensus,
     pub payload: Binary,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[cw_serde]
 pub enum ExecutePayload {
     UpdateValset {
         valset: Valset,
@@ -53,14 +52,13 @@ pub enum ExecutePayload {
     },
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[cw_serde]
 pub struct LogicCallArgs {
     pub contract_address: Addr,
     pub payload: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[cw_serde]
 pub enum QueryMsg {
     SmartContractId,
     ValsetId,

@@ -17,7 +17,8 @@
             "eth_address": {
               "type": "string"
             }
-          }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -37,7 +38,8 @@
             "payload": {
               "$ref": "#/definitions/Binary"
             }
-          }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

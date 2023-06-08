@@ -10,6 +10,7 @@
       "$ref": "#/definitions/TargetContractInfo"
     }
   },
+  "additionalProperties": false,
   "definitions": {
     "TargetContractInfo": {
       "description": "Metadata necessary to call a specific contract.",
@@ -37,7 +38,8 @@
           "description": "The json encoded ABI of the contract on the target chain.",
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     }
   }
 }
