@@ -1,13 +1,12 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::Binary;
-use xcci::TargetContractInfo;
 
 #[cw_serde]
 pub struct MigrateMsg {}
 
 #[cw_serde]
 pub struct InstantiateMsg {
-    pub target_contract_info: TargetContractInfo,
+    pub job_id: String,
 }
 
 #[cw_serde]

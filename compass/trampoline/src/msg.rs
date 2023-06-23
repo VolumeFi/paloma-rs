@@ -1,6 +1,5 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::Binary;
-use xcci::TargetContractInfo;
 
 #[cw_serde]
 pub struct MigrateMsg {}
@@ -17,10 +16,7 @@ pub struct InstantiateMsg {
 
 #[cw_serde]
 pub enum ExecuteMsg {
-    Call {
-        target_contract_info: TargetContractInfo,
-        payload: Binary,
-    },
+    Call { job_id: String, payload: Binary },
 }
 
 #[cw_serde]

@@ -4,7 +4,7 @@ use cosmwasm_std::{
 };
 use cw_storage_plus::Item;
 use eyre::Result;
-use xcci::ExecutePalomaJob;
+use xcci::ExecuteJobWasmEvent;
 
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
@@ -35,20 +35,12 @@ pub fn execute(
     _env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
-) -> Result<Response<ExecutePalomaJob>> {
+) -> Result<Response<ExecuteJobWasmEvent>> {
     if let Some(addr) = ADMIN.may_load(deps.storage)? {
         assert_eq!(addr, info.sender, "Incorrect sender");
     }
-    let ExecuteMsg::Call {
-        target_contract_info,
-        payload,
-    } = msg;
-    Ok(
-        Response::new().add_message(CosmosMsg::Custom(ExecutePalomaJob {
-            target_contract_info,
-            payload,
-        })),
-    )
+    let ExecuteMsg::Call { job_id, payload } = msg;
+    Ok(Response::new().add_message(CosmosMsg::Custom(ExecuteJobWasmEvent { job_id, payload })))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]

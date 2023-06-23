@@ -1,5 +1,5 @@
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
-use crate::state::{ADMIN, ENTRANTS, ETH_WINNERS, PALOMA_WINNERS, TARGET_CONTRACT_INFO};
+use crate::state::{ADMIN, ENTRANTS, ETH_WINNERS, JOB_ID, PALOMA_WINNERS};
 use cosmwasm_std::{
     coin, ensure_eq, to_binary, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Order,
     Response, StdResult,
@@ -8,7 +8,7 @@ use eyre::{bail, ensure, eyre, Result};
 use rand::seq::IteratorRandom;
 use rand::SeedableRng;
 use std::collections::HashSet;
-use xcci::ExecutePalomaJob;
+use xcci::ExecuteJobWasmEvent;
 
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
@@ -28,7 +28,7 @@ pub fn instantiate(
     msg: InstantiateMsg,
 ) -> StdResult<Response> {
     ADMIN.save(deps.storage, &info.sender)?;
-    TARGET_CONTRACT_INFO.save(deps.storage, &msg.target_contract_info)?;
+    JOB_ID.save(deps.storage, &msg.job_id)?;
     PALOMA_WINNERS.save(deps.storage, &HashSet::new())?;
     ETH_WINNERS.save(deps.storage, &HashSet::new())?;
     Ok(Response::new())
@@ -40,7 +40,7 @@ pub fn execute(
     env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
-) -> Result<Response<ExecutePalomaJob>> {
+) -> Result<Response<ExecuteJobWasmEvent>> {
     match msg {
         ExecuteMsg::LayEgg { eth_address } => lay_egg(deps, env, info, eth_address),
         ExecuteMsg::PickWinner { payload } => pick_winner(deps, env, info, payload),
@@ -52,7 +52,7 @@ fn lay_egg(
     _env: Env,
     info: MessageInfo,
     eth_address: String,
-) -> Result<Response<ExecutePalomaJob>> {
+) -> Result<Response<ExecuteJobWasmEvent>> {
     // We need a valid looking eth address
     assert_eq!(
         hex::decode(eth_address.strip_prefix("0x").unwrap())
@@ -86,7 +86,7 @@ fn pick_winner(
     env: Env,
     info: MessageInfo,
     payload: Binary,
-) -> Result<Response<ExecutePalomaJob>> {
+) -> Result<Response<ExecuteJobWasmEvent>> {
     ensure_eq!(info.sender, ADMIN.load(deps.storage)?, eyre!("forbidden"));
 
     let mut paloma_winners = PALOMA_WINNERS.load(deps.storage)?;
@@ -108,12 +108,9 @@ fn pick_winner(
     PALOMA_WINNERS.save(deps.storage, &paloma_winners)?;
     ETH_WINNERS.save(deps.storage, &eth_winners)?;
 
-    let target_contract_info = TARGET_CONTRACT_INFO.load(deps.storage)?;
+    let job_id = JOB_ID.load(deps.storage)?;
     Ok(Response::new()
-        .add_message(CosmosMsg::Custom(ExecutePalomaJob {
-            target_contract_info,
-            payload,
-        }))
+        .add_message(CosmosMsg::Custom(ExecuteJobWasmEvent { job_id, payload }))
         .add_attribute("winning_paloma_address", &paloma_address)
         .add_attribute("winning_eth_address", &eth_address_str))
 }

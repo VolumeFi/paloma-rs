@@ -38,29 +38,14 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Binary, CustomMsg};
 
-/// Metadata necessary to call a specific contract.
+/// The `CustomMsg` understood by Paloma to execute cross chain calls.
 #[derive(Eq)]
 #[cw_serde]
-pub struct TargetContractInfo {
-    /// The chain id of the target chain, e.g. "eth-main".
-    pub chain_id: String,
-    /// ID of the target chain's compass contract, e.g. "50".
-    pub compass_id: String,
-    /// The address of the contract to run on the target chain,
-    /// e.g. "0xd58Dfd5b39fCe87dD9C434e95428DdB289934179".
-    pub contract_address: String,
-    /// The json encoded ABI of the contract on the target chain.
-    pub smart_contract_abi: String,
-}
-
-/// A struct implementing `CustomMsg` to be passed as a response message.
-#[derive(Eq)]
-#[cw_serde]
-pub struct ExecutePalomaJob {
-    /// Metadata of the foreign contract we wish to call.
-    pub target_contract_info: TargetContractInfo,
+pub struct ExecuteJobWasmEvent {
+    /// ID of the metadata of the foreign contract we wish to call.
+    pub job_id: String,
     /// Payload for the call, encoded appropriately for the target chain and contract.
     pub payload: Binary,
 }
 
-impl CustomMsg for ExecutePalomaJob {}
+impl CustomMsg for ExecuteJobWasmEvent {}
