@@ -1,0 +1,19 @@
+[package]
+name = "order-storage"
+version = "0.1.0"
+edition = "2021"
+description = "A contract for storing arbitrary order requests."
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+backtraces = ["cosmwasm-std/backtraces"]
+# use library feature to disable all init/handle/query exports
+library = []
+
+[dependencies]
+cosmwasm-schema.workspace = true
+cosmwasm-std.workspace = true
+cw-storage-plus.workspace = true
+eyre.workspace = true
